@@ -1,0 +1,13 @@
+
+{
+	"PyExe":"..\\py.exe",
+	"Tips":[
+		"KKDaemon为你搓脚~^_^",
+		"KKDaemon提醒你记得刷牙!"
+	],
+	"TipsInterval":300,
+    "Menus": {
+    	"BAT测试":".\\Scripts\\open_work_dir.bat",
+    	"BAT测试2":".\\Scripts\\test.py",
+    }
+}
