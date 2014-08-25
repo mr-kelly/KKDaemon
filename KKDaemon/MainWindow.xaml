@@ -1,0 +1,9 @@
+﻿<Window x:Class="KKDaemon.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Height="350" Width="525" ResizeMode="NoResize" Title="关于KKDaemon" WindowStartupLocation="Manual" WindowState="Minimized">
+    <Grid HorizontalAlignment="Left" Height="322" VerticalAlignment="Top" Width="519">
+        <Button Content="哦" HorizontalAlignment="Left" Margin="192.093,256.924,0,0" VerticalAlignment="Top" Width="116.114" Name="_Button" Height="21.837" Click="_Button_Click"/>
+        <Label Content="KKDaemon  v0.999999" HorizontalAlignment="Left" Margin="27.571,43.734,0,0" VerticalAlignment="Top" FontSize="20"/>
+        <Label Content="Kelly &lt;23110388@qq.com&gt;" HorizontalAlignment="Left" Margin="29.871,114.154,0,0" VerticalAlignment="Top" FontSize="16"/>
+    </Grid>
+</Window>
