@@ -1,7 +1,7 @@
 
 import os
 for i in range(1000):
-	print 'ok'
+	print 'Test Python script....'
 
 
 os.system('pause')
