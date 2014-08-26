@@ -98,7 +98,8 @@ namespace KKDaemon
             WindowInteropHelper wih = new WindowInteropHelper(this);
             HotKey.RegisterHotKey(wih.Handle, hotkey_flag, HotKey.KeyModifiers.Alt, (int)System.Windows.Forms.Keys.Oemtilde);  // alt + ~
             HotKey.RegisterHotKey(wih.Handle, hotkey_flag+1, HotKey.KeyModifiers.Ctrl, (int)System.Windows.Forms.Keys.Oemtilde);  // ctrl + ~
-            HotKey.RegisterHotKey(wih.Handle, hotkey_flag+2, HotKey.KeyModifiers.Shift, (int)System.Windows.Forms.Keys.Oemtilde);  // shift + ~
+            HotKey.RegisterHotKey(wih.Handle, hotkey_flag+2, HotKey.KeyModifiers.Shift | HotKey.KeyModifiers.Ctrl, (int)System.Windows.Forms.Keys.Oemtilde);  // shift + ~
+            HotKey.RegisterHotKey(wih.Handle, hotkey_flag + 3, HotKey.KeyModifiers.Shift | HotKey.KeyModifiers.Alt, (int)System.Windows.Forms.Keys.Oemtilde);  // shift + ~
             HwndSource hs = HwndSource.FromHwnd(wih.Handle);
             hs.AddHook(new HwndSourceHook(OnHotKey));
         }
