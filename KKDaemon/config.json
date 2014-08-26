@@ -1,8 +1,8 @@
 
 {
-	"PyExe":".\\py.exe",
+	"PyExe":".\\py.exe", 
 	"Tips":[
-		"KKDaemon为你搓脚~^_^",
+		"KKDaemon为你搓脚~^_^~",
 		"KKDaemon提醒你记得刷牙!"
 	],
 	"TipsInterval":300,

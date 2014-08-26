@@ -26,11 +26,21 @@ KKDaemon是一个简单Windows托盘工具，帮助程序开发者方便地执�
 功能
 -----------------------
 
-打开KKDaemon/bin/Debug/KKDaemon.exe执行程序后，右下角出现托盘图标。
-按下快捷键Alt + ~ 或 Ctrl + ~，弹出脚本选择菜单。
+* 打开KKDaemon/bin/Debug/KKDaemon.exe执行程序后，右下角出现托盘图标。
+* 按下快捷键Alt + ~ 或 Ctrl + ~，弹出脚本选择菜单。
+* KKDaemon/bin/Debug/config.json是配置文件
+* 可以配置时间和消息，间隔时间出现冒泡消息
 
-KKDaemon/bin/Debug/config.json是配置文件，目前支持自定义Python脚本，日后添加NodeJS脚本引擎。
+目前支持自定义Python脚本，日后添加NodeJS脚本引擎，内置一个py.exe绿色python
 
+
+开发平台
+-----------------
+Visual Studio 2012 + .Net Framework 3.0 WPF
+
+老的Python版
+-------------------------
+原名KKScriptHelper， 使用Python + wxPython + py2exe开发。遇到一些兼容性问题，加之API有限，改用.net framework 3.0的WPF， Windows 7后免框架安装。
 
 现状
 -----------------------
@@ -39,4 +49,5 @@ KKDaemon/bin/Debug/config.json是配置文件，目前支持自定义Python脚�
 
 未来
 --------
-与服务器进行通讯，实现公司内部的基本信息广播
+* 与服务器进行通讯，实现公司内部的基本信息广播
+* 使用IronPython替代CPython
