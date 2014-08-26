@@ -97,6 +97,8 @@ namespace KKDaemon
             // 快捷键注册
             WindowInteropHelper wih = new WindowInteropHelper(this);
             HotKey.RegisterHotKey(wih.Handle, hotkey_flag, HotKey.KeyModifiers.Alt, (int)System.Windows.Forms.Keys.Oemtilde);  // alt + ~
+            HotKey.RegisterHotKey(wih.Handle, hotkey_flag+1, HotKey.KeyModifiers.Ctrl, (int)System.Windows.Forms.Keys.Oemtilde);  // ctrl + ~
+            HotKey.RegisterHotKey(wih.Handle, hotkey_flag+2, HotKey.KeyModifiers.Shift, (int)System.Windows.Forms.Keys.Oemtilde);  // shift + ~
             HwndSource hs = HwndSource.FromHwnd(wih.Handle);
             hs.AddHook(new HwndSourceHook(OnHotKey));
         }
@@ -117,7 +119,7 @@ namespace KKDaemon
                 case HotKey.WM_HOTKEY:
                     {
                         int sid = wParam.ToInt32();
-                        if (sid == hotkey_flag)
+                        if (sid >= hotkey_flag && sid <= (hotkey_flag+10))
                         {
                             //MessageBox.Show("按下Alt+S");
                             ShowMyMenu();
@@ -142,7 +144,7 @@ namespace KKDaemon
             this._Button.ContextMenu = new System.Windows.Controls.ContextMenu();
 
             System.Windows.Controls.MenuItem title = new System.Windows.Controls.MenuItem();
-            title.Header = @"KKDaemon";
+            title.Header = @"== KKDaemon ==";
             title.Click += (__, __2) =>
             {
                 ShowAbout(null, null);
@@ -153,12 +155,22 @@ namespace KKDaemon
 
             foreach (KeyValuePair<string, object> kv in (JsonObject)Config["Menus"])
             {
-                System.Windows.Controls.MenuItem menuItem = new System.Windows.Controls.MenuItem();
-                menuItem.Header = kv.Key;
-                MenuItem2MenuScriptMap[menuItem] = kv.Value as string;
+                string text = kv.Key;
+                string value = kv.Value as string;
+                if (text == "-" || value == "-")
+                {
+                    this._Button.ContextMenu.Items.Add(new System.Windows.Controls.Separator());
+                }
+                else
+                {
+                    System.Windows.Controls.MenuItem menuItem = new System.Windows.Controls.MenuItem();
+                    menuItem.Header = text;
+                    MenuItem2MenuScriptMap[menuItem] = value;
 
-                menuItem.Click += OnClickMenu;
-                this._Button.ContextMenu.Items.Add(menuItem);
+                    menuItem.Click += OnClickMenu;
+                    this._Button.ContextMenu.Items.Add(menuItem);
+                }
+
             }
 
             System.Windows.Controls.MenuItem exit2 = new System.Windows.Controls.MenuItem();
@@ -181,24 +193,32 @@ namespace KKDaemon
             System.IO.Directory.SetCurrentDirectory(dirPath); // chdir
             string pyExeName = System.IO.Path.GetFileName(PyExecFile);
 
-            if (Directory.Exists(fullPath))
+            try
             {
-                System.Diagnostics.Process.Start("explorer.exe", fullPath);
-            }
-            else
-            {
-                switch (System.IO.Path.GetExtension(scriptFile))
+                if (Directory.Exists(fullPath))
                 {
-                    case ".py":
-                        System.Diagnostics.Process.Start(pyExeFullPath, fullPath);
-                        break;
-                    case ".bat":
-                        System.Diagnostics.Process.Start(fullPath);
-                        break;
-                    default:
-                        throw new Exception("UnSupport file " + fullPath);
+                    System.Diagnostics.Process.Start("explorer.exe", fullPath);
+                }
+                else
+                {
+                    switch (System.IO.Path.GetExtension(scriptFile))
+                    {
+                        case ".py":
+                            System.Diagnostics.Process.Start(pyExeFullPath, fullPath);
+                            break;
+                        case ".bat":
+                            System.Diagnostics.Process.Start(fullPath);
+                            break;
+                        default:
+                            throw new Exception("UnSupport file " + fullPath);
+                    }
                 }
             }
+            catch (Exception e2)
+            {
+                MessageBox.Show(e2.Message);
+            }
+
 
         }
         /// <summary>
@@ -272,10 +292,7 @@ namespace KKDaemon
 
         void notifyIcon_MouseClick(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (e.Button == System.Windows.Forms.MouseButtons.Left)
-                ShowMyMenu();
-            else
-                ShowAbout(sender, e);
+            ShowMyMenu();
         }
 
         private void _Button_Click(object sender, RoutedEventArgs e)
