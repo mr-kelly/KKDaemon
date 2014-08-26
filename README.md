@@ -3,6 +3,7 @@ KKDaemon - Very easy tool for automation
 
 KKDaemon是一个简单Windows托盘工具，帮助程序开发者方便地执行他们的自动化脚本。
 
+![KKDaemon](https://raw.githubusercontent.com/mr-kelly/KKDaemon/master/screenshot.png)
 
 起因
 -------
