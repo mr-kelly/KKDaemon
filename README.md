@@ -1,4 +1,4 @@
 KKDaemon
 ========
 
-Daemon program on Windows for Automatic purpose
+Daemon program on Windows for Automation purpose
