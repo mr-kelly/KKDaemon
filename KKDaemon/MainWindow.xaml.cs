@@ -47,14 +47,18 @@ namespace KKDaemon
 
             InitNotifyIcon();
 
-            InitMenus();
-            InitTimer();
+            ResetMenus();
+            ResetTimer();
+
             this.Show();
             this.Hide();
         }
-
-        private void InitTimer()
+        System.Windows.Threading.DispatcherTimer dTimer = null;
+        private void ResetTimer()
         {
+            if (dTimer != null)
+                dTimer.Stop();
+
             int tipsInterval = 5;  // 默認5秒
             if (Config.ContainsKey("TipsInterval"))
             {
@@ -62,17 +66,17 @@ namespace KKDaemon
                 tipsInterval = int.Parse(o.ToString());
             }
 
-            System.Windows.Threading.DispatcherTimer dTimer = new System.Windows.Threading.DispatcherTimer();
-            dTimer.Tick += new EventHandler((object sender, EventArgs e) => 
+            dTimer = new System.Windows.Threading.DispatcherTimer();
+            dTimer.Tick += new EventHandler((object sender, EventArgs e) =>
             {
                 this.notifyIcon.BalloonTipText = GetRandTips();
                 this.notifyIcon.ShowBalloonTip(500);
             });
             dTimer.Interval = new TimeSpan(0, 0, tipsInterval);
-            dTimer.Start(); 
+            dTimer.Start();
         }
 
-        
+
         private void InitConfigs()
         {
             if (!File.Exists(ConfigFilePath))
@@ -84,6 +88,112 @@ namespace KKDaemon
             JsonObject jsonObj = SimpleJson.SimpleJson.DeserializeObject(jsonTxt) as JsonObject;
 
             Config = jsonObj;
+
+            StringBuilder sb = new StringBuilder();
+            foreach (string tips in Config["Tips"] as JsonArray)
+            {
+                sb.AppendLine(tips);
+            }
+
+            int tipsInterval = 500;
+            int.TryParse(Config["TipsInterval"].ToString(), out tipsInterval);
+
+            this.TextBlockTipsInterval_.Text = tipsInterval.ToString();
+            this.TextBlockTips_.Text = sb.ToString();
+
+            this.TextBlockTipsInterval_.TextChanged += TextBlockTipsInterval__TextChanged;
+            this.TextBlockTips_.TextChanged += TextBlockTips__Changed;
+
+            ResetMenuCfgs();
+
+            this.TextBox_MenuKeyCfg.TextChanged += TextBox_MenuCfg_TextChanged;
+            this.TextBox_MenuValueCfg.TextChanged += TextBox_MenuCfg_TextChanged;
+
+        }
+
+        void ResetMenuCfgs()
+        {
+            this.ListBox_Menus.Items.Clear();
+            foreach (KeyValuePair<string, object> kv in Config["Menus"] as JsonObject)
+            {
+                ListBoxItem listBoxItem = new ListBoxItem();
+                listBoxItem.Selected += OnListBoxItem_Selected;
+                listBoxItem.Content = kv.Key;
+                this.ListBox_Menus.Items.Add(listBoxItem);
+            }
+
+        }
+        void SaveConfigFile()
+        {
+            ChDirToThisExe();
+
+            // Write
+            File.WriteAllText(ConfigFilePath, Config.ToString());
+
+            ResetMenus();
+            ResetTimer();
+        }
+
+        string selectingMenuConf = "";
+
+        void TextBlockTipsInterval__TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string intervalTxt = this.TextBlockTipsInterval_.Text;
+            if (!string.IsNullOrEmpty(intervalTxt))
+            {
+                // TipsInterval
+                Config["TipsInterval"] = this.TextBlockTipsInterval_.Text;
+
+                SaveConfigFile();
+            }
+        }
+
+        void TextBox_MenuCfg_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(selectingMenuConf))
+            {
+                
+                string key = this.TextBox_MenuKeyCfg.Text;
+
+                JsonObject menuConf = Config["Menus"] as JsonObject;
+                menuConf.Remove(selectingMenuConf);
+                menuConf[key] = this.TextBox_MenuValueCfg.Text;
+                selectingMenuConf = key;
+
+                SaveConfigFile();
+                ResetMenuCfgs();
+            }
+        }
+
+        void OnListBoxItem_Selected(object sender, RoutedEventArgs e)
+        {
+            selectingMenuConf = null;
+
+            ListBoxItem listBoxItem = sender as ListBoxItem;
+
+            JsonObject menuConf = Config["Menus"] as JsonObject;
+            string key = listBoxItem.Content as string;
+            string menuScript = menuConf[key].ToString();
+            this.TextBox_MenuValueCfg.Text = menuScript;
+            this.TextBox_MenuKeyCfg.Text = key;
+
+            selectingMenuConf = key; // 选中的
+        }
+
+        void TextBlockTips__Changed(object sender, TextChangedEventArgs e)
+        {
+            //this.ButtonApplyConfig_.IsEnabled = true;
+
+            // Tips
+            string[] tips = this.TextBlockTips_.Text.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            JsonArray tipsArray = new JsonArray();
+            foreach (string tip in tips)
+            {
+                tipsArray.Add(tip);
+            }
+            Config["Tips"] = tipsArray;
+
+            SaveConfigFile();
         }
 
         /// <summary>
@@ -97,8 +207,8 @@ namespace KKDaemon
             // 快捷键注册
             WindowInteropHelper wih = new WindowInteropHelper(this);
             HotKey.RegisterHotKey(wih.Handle, hotkey_flag, HotKey.KeyModifiers.Alt, (int)System.Windows.Forms.Keys.Oemtilde);  // alt + ~
-            HotKey.RegisterHotKey(wih.Handle, hotkey_flag+1, HotKey.KeyModifiers.Ctrl, (int)System.Windows.Forms.Keys.Oemtilde);  // ctrl + ~
-            HotKey.RegisterHotKey(wih.Handle, hotkey_flag+2, HotKey.KeyModifiers.Shift | HotKey.KeyModifiers.Ctrl, (int)System.Windows.Forms.Keys.Oemtilde);  // shift + ~
+            HotKey.RegisterHotKey(wih.Handle, hotkey_flag + 1, HotKey.KeyModifiers.Ctrl, (int)System.Windows.Forms.Keys.Oemtilde);  // ctrl + ~
+            HotKey.RegisterHotKey(wih.Handle, hotkey_flag + 2, HotKey.KeyModifiers.Shift | HotKey.KeyModifiers.Ctrl, (int)System.Windows.Forms.Keys.Oemtilde);  // shift + ~
             HotKey.RegisterHotKey(wih.Handle, hotkey_flag + 3, HotKey.KeyModifiers.Shift | HotKey.KeyModifiers.Alt, (int)System.Windows.Forms.Keys.Oemtilde);  // shift + ~
             HwndSource hs = HwndSource.FromHwnd(wih.Handle);
             hs.AddHook(new HwndSourceHook(OnHotKey));
@@ -120,7 +230,7 @@ namespace KKDaemon
                 case HotKey.WM_HOTKEY:
                     {
                         int sid = wParam.ToInt32();
-                        if (sid >= hotkey_flag && sid <= (hotkey_flag+10))
+                        if (sid >= hotkey_flag && sid <= (hotkey_flag + 10))
                         {
                             //MessageBox.Show("按下Alt+S");
                             ShowMyMenu();
@@ -140,9 +250,9 @@ namespace KKDaemon
             System.IO.Directory.SetCurrentDirectory(myExeDir);
         }
 
-        void InitMenus()
+        void ResetMenus()
         {
-            this._Button.ContextMenu = new System.Windows.Controls.ContextMenu();
+            this.ButtonApplyConfig_.ContextMenu = new System.Windows.Controls.ContextMenu();
 
             System.Windows.Controls.MenuItem title = new System.Windows.Controls.MenuItem();
             title.Header = @"== KKDaemon ==";
@@ -150,8 +260,8 @@ namespace KKDaemon
             {
                 ShowAbout(null, null);
             };
-            this._Button.ContextMenu.Items.Add(title);
-            this._Button.ContextMenu.Items.Add(new System.Windows.Controls.Separator());
+            this.ButtonApplyConfig_.ContextMenu.Items.Add(title);
+            this.ButtonApplyConfig_.ContextMenu.Items.Add(new System.Windows.Controls.Separator());
 
 
             foreach (KeyValuePair<string, object> kv in (JsonObject)Config["Menus"])
@@ -160,7 +270,7 @@ namespace KKDaemon
                 string value = kv.Value as string;
                 if (text == "-" || value == "-")
                 {
-                    this._Button.ContextMenu.Items.Add(new System.Windows.Controls.Separator());
+                    this.ButtonApplyConfig_.ContextMenu.Items.Add(new System.Windows.Controls.Separator());
                 }
                 else
                 {
@@ -169,18 +279,18 @@ namespace KKDaemon
                     MenuItem2MenuScriptMap[menuItem] = value;
 
                     menuItem.Click += OnClickMenu;
-                    this._Button.ContextMenu.Items.Add(menuItem);
+                    this.ButtonApplyConfig_.ContextMenu.Items.Add(menuItem);
                 }
 
             }
 
             System.Windows.Controls.MenuItem exit2 = new System.Windows.Controls.MenuItem();
-            this._Button.ContextMenu.Items.Add(new System.Windows.Controls.Separator());
-            this._Button.ContextMenu.Items.Add(exit2);
+            this.ButtonApplyConfig_.ContextMenu.Items.Add(new System.Windows.Controls.Separator());
+            this.ButtonApplyConfig_.ContextMenu.Items.Add(exit2);
             exit2.Header = @"殘忍地退出";
             exit2.Click += ExitApp;
 
-            this._Button.ContextMenu.IsOpen = false;
+            this.ButtonApplyConfig_.ContextMenu.IsOpen = false;
         }
 
         void OnClickMenu(object sender, RoutedEventArgs e)
@@ -227,10 +337,10 @@ namespace KKDaemon
         /// </summary>
         void ShowMyMenu()
         {
-            
+
             this.Activate();  // 激活窗口~ 失焦時關閉菜單
 
-            this._Button.ContextMenu.IsOpen = true;
+            this.ButtonApplyConfig_.ContextMenu.IsOpen = true;
 
         }
 
@@ -296,13 +406,12 @@ namespace KKDaemon
             ShowMyMenu();
         }
 
-        private void _Button_Click(object sender, RoutedEventArgs e)
-        {
-
-            //ExitApp(null, null);
-            HideAbout(null, null);
+        private void Onhyperlink_Click(object sender, RoutedEventArgs e)
+        {            
+            Hyperlink link = sender as Hyperlink;
+            try { System.Diagnostics.Process.Start(link.NavigateUri.AbsoluteUri); }
+            catch { }
         }
-
     }
 }
 
