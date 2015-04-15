@@ -1,1 +1,3 @@
-/KKDaemon/obj
+*.suo
+KKDaemon/obj/
+KKDaemon/bin/
