@@ -1,1 +1,16 @@
-{"PyExe":".\\py.exe","Tips":["!KKDaemon为你搓脚~^_^1","KKDaemon提醒你记得刷牙!sdfdf1","KKDaemon!aas!"],"TipsInterval":"50","Menus":{"打开KKDaemon目录a":".\\","测试Python脚本23":".\\Scripts\\test.py"}}
+
+{
+	"PyExe":".\\py.exe", 
+	"Tips":[
+		"KKDaemon为你搓脚~^_^~",
+		"KKDaemon提醒你记得刷牙!"
+	],
+	"TipsInterval":300,
+	"Cron": [
+		["* * * * *", "测试定时py", ".\\Scripts\\test.py"]
+	],
+    "Menus": {
+    	"打开KKDaemon目录":".\\",
+    	"测试Python脚本":".\\Scripts\\test.py",
+    }
+}

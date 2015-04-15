@@ -14,6 +14,7 @@ using NotifyIcon = System.Windows.Forms.NotifyIcon;
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
 using System.IO;
+using NCrontab;
 using SimpleJson;
 
 namespace KKDaemon
@@ -36,7 +37,8 @@ namespace KKDaemon
 
         JsonObject Config;
 
-        Dictionary<System.Windows.Controls.MenuItem, string> MenuItem2MenuScriptMap = new Dictionary<MenuItem, string>();
+        readonly Dictionary<System.Windows.Controls.MenuItem, string> MenuItem2CmdMap = new Dictionary<MenuItem, string>();
+        CronTaskManager _cronTask = new CronTaskManager();
 
         public MainWindow()
         {
@@ -47,7 +49,7 @@ namespace KKDaemon
 
             InitNotifyIcon();
 
-            ResetMenus();
+            ShowMenus();
             ResetTimer();
 
             this.Show();
@@ -85,7 +87,7 @@ namespace KKDaemon
             }
             string jsonTxt = File.ReadAllText(ConfigFilePath);
 
-            JsonObject jsonObj = SimpleJson.SimpleJson.DeserializeObject(jsonTxt) as JsonObject;
+            var jsonObj = SimpleJson.SimpleJson.DeserializeObject(jsonTxt) as JsonObject;
 
             Config = jsonObj;
 
@@ -111,8 +113,12 @@ namespace KKDaemon
 
         }
 
+        /// <summary>
+        /// 菜单显示
+        /// </summary>
         void ResetMenuCfgs()
         {
+            // 指令性菜单
             this.ListBox_Menus.Items.Clear();
             foreach (KeyValuePair<string, object> kv in Config["Menus"] as JsonObject)
             {
@@ -130,7 +136,7 @@ namespace KKDaemon
             // Write
             File.WriteAllText(ConfigFilePath, Config.ToString());
 
-            ResetMenus();
+            ShowMenus();
             ResetTimer();
         }
 
@@ -250,11 +256,12 @@ namespace KKDaemon
             System.IO.Directory.SetCurrentDirectory(myExeDir);
         }
 
-        void ResetMenus()
+        void ShowMenus()
         {
             this.ButtonApplyConfig_.ContextMenu = new System.Windows.Controls.ContextMenu();
+            var items = this.ButtonApplyConfig_.ContextMenu.Items;
 
-            System.Windows.Controls.MenuItem title = new System.Windows.Controls.MenuItem();
+            var title = new System.Windows.Controls.MenuItem();
             title.Header = @"== KKDaemon ==";
             title.Click += (__, __2) =>
             {
@@ -263,12 +270,34 @@ namespace KKDaemon
             this.ButtonApplyConfig_.ContextMenu.Items.Add(title);
             this.ButtonApplyConfig_.ContextMenu.Items.Add(new System.Windows.Controls.Separator());
 
+            // Crons
+            if (Config.ContainsKey("Cron"))
+            {
+                foreach (var jCron in (JsonArray)Config["Cron"])
+                {
+                    var jCronArray2 = (JsonArray) jCron;
+                    var cron = (string)jCronArray2[0];
+                    var desc = (string)jCronArray2[1];
+                    var cmd = (string)jCronArray2[2];
+                    
+                    // 不能按
+                    var menuItem = new MenuItem {Header = desc, IsEnabled = false};
+                    _cronTask.BeginTask(cron, () =>
+                    {
+                        DoCmd(cmd);
+                    });
+                    this.ButtonApplyConfig_.ContextMenu.Items.Add(menuItem);
+                    items.Add(new Separator());
+                }
+
+            }
+
 
             foreach (KeyValuePair<string, object> kv in (JsonObject)Config["Menus"])
             {
                 string text = kv.Key;
-                string value = kv.Value as string;
-                if (text == "-" || value == "-")
+                string cmd = kv.Value as string;
+                if (text == "-" || cmd == "-")
                 {
                     this.ButtonApplyConfig_.ContextMenu.Items.Add(new System.Windows.Controls.Separator());
                 }
@@ -276,8 +305,7 @@ namespace KKDaemon
                 {
                     System.Windows.Controls.MenuItem menuItem = new System.Windows.Controls.MenuItem();
                     menuItem.Header = text;
-                    MenuItem2MenuScriptMap[menuItem] = value;
-
+                    MenuItem2CmdMap[menuItem] = cmd;
                     menuItem.Click += OnClickMenu;
                     this.ButtonApplyConfig_.ContextMenu.Items.Add(menuItem);
                 }
@@ -293,9 +321,9 @@ namespace KKDaemon
             this.ButtonApplyConfig_.ContextMenu.IsOpen = false;
         }
 
-        void OnClickMenu(object sender, RoutedEventArgs e)
+        void DoCmd(string scriptFile)
         {
-            string scriptFile = this.MenuItem2MenuScriptMap[(MenuItem)sender];
+
             ChDirToThisExe();
 
             string fullPath = System.IO.Path.GetFullPath(scriptFile);  // 完整路徑
@@ -330,6 +358,12 @@ namespace KKDaemon
                 MessageBox.Show(e2.Message);
             }
 
+
+        }
+        void OnClickMenu(object sender, RoutedEventArgs e)
+        {
+            string scriptFile = this.MenuItem2CmdMap[(MenuItem)sender];
+            DoCmd(scriptFile);
 
         }
         /// <summary>

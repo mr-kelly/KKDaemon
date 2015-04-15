@@ -1,18 +1,23 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KKDaemon", "KKDaemon\KKDaemon.csproj", "{0F3DCA72-71EF-42D6-8A2F-7323205CD876}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		ReleaseTest|Any CPU = ReleaseTest|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F3DCA72-71EF-42D6-8A2F-7323205CD876}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0F3DCA72-71EF-42D6-8A2F-7323205CD876}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F3DCA72-71EF-42D6-8A2F-7323205CD876}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F3DCA72-71EF-42D6-8A2F-7323205CD876}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F3DCA72-71EF-42D6-8A2F-7323205CD876}.ReleaseTest|Any CPU.ActiveCfg = Release|Any CPU
+		{0F3DCA72-71EF-42D6-8A2F-7323205CD876}.ReleaseTest|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

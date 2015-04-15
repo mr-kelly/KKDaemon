@@ -6,6 +6,9 @@
 		"KKDaemon提醒你记得刷牙!"
 	],
 	"TipsInterval":300,
+	"Cron": [
+		["* * * * *", "测试定时py", ".\\Scripts\\test.py"]
+	],
     "Menus": {
     	"打开KKDaemon目录":".\\",
     	"测试Python脚本":".\\Scripts\\test.py",
